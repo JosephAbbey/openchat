@@ -1,14 +1,5 @@
 import NextAuth from 'next-auth';
 import Providers from 'next-auth/providers';
-import * as Fauna from 'faunadb';
-import { FaunaAdapter } from '@next-auth/fauna-adapter';
-
-const client = new Fauna.Client({
-    secret: 'secret',
-    scheme: 'http',
-    domain: 'localhost',
-    port: 8443,
-});
 
 export default NextAuth({
     providers: [
@@ -17,5 +8,14 @@ export default NextAuth({
             clientSecret: process.env.GITHUB_CLIENT_SECRET,
         }),
     ],
-    adapter: FaunaAdapter({ faunaClient: client }),
+    debug: process.env.NODE_ENV === 'development',
+    secret: process.env.AUTH_SECRET,
+    jwt: {
+        secret: process.env.JWT_SECRET,
+    },
+    callbacks: {
+        async redirect(url, baseUrl) {
+            return '/';
+        },
+    },
 });

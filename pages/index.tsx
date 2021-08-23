@@ -6,16 +6,19 @@ const Index: NextPage = () => {
 
     return (
         <>
-            {!session && (
+            {!session ? (
                 <>
-                    Not signed in <br />
-                    <button onClick={() => signIn()}>Sign in</button>
+                    <button onClick={() => signIn('github')}>
+                        Sign in with Github
+                    </button>
                 </>
-            )}
-            {session && (
+            ) : (
                 <>
-                    Signed in <br />
-                    <button onClick={() => signOut()}>Sign out</button>
+                    <p>
+                        Not {session.user?.name || session.user?.email}? Then
+                        Logout and login again
+                    </p>
+                    <button onClick={() => signOut()}>Logout</button> <br />
                 </>
             )}
         </>
