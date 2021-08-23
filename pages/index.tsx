@@ -14,7 +14,7 @@ const Index: NextPage = () => {
             )}
             {session && (
                 <>
-                    Signed in as {session.user.email} <br />
+                    Signed in <br />
                     <button onClick={() => signOut()}>Sign out</button>
                 </>
             )}
