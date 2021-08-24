@@ -17,10 +17,5 @@ export default NextAuth({
     jwt: {
         secret: process.env.JWT_SECRET,
     },
-    callbacks: {
-        async redirect(url, baseUrl) {
-            return url.startsWith(baseUrl) ? url : baseUrl;
-        },
-    },
     adapter: PrismaAdapter(prisma),
 });
