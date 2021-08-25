@@ -2,34 +2,48 @@ import type { NextPage } from 'next';
 import { useEffect } from 'react';
 import { signIn, signOut, useSession } from 'next-auth/client';
 import io from 'socket.io-client';
+import cookies from 'next-cookies';
 
-const Index: NextPage = () => {
+interface Props {
+    cookie;
+}
+
+const Page: NextPage<Props> = ({ cookie }) => {
     const [session] = useSession();
+
+    function epoch() {
+        //@ts-ignore
+        return Math.floor(new Date() / 1000);
+    }
+    function unepoch(time) {
+        //@ts-ignore
+        return new Date(time * 1000);
+    }
 
     useEffect(() => {
         if (session) {
-            fetch('/api/socketio').finally(() => {
+            fetch('/api/socket').finally(() => {
                 const socket = io();
 
-                socket.on('connect', () => {
-                    console.log('connect');
-                    socket.emit('hello');
+                socket.on('handshake', () => {
+                    socket.emit('handshake', cookie['next-auth.session-token']);
                 });
 
-                socket.on('hello', (data) => {
-                    console.log('hello', data);
+                socket.on('receive', (msg) => {
+                    console.log(msg);
                 });
 
-                socket.on('a user connected', () => {
-                    console.log('a user connected');
-                });
-
-                socket.on('disconnect', () => {
-                    console.log('disconnect');
-                });
+                if (process.env.NODE_ENV === 'development') {
+                    //@ts-expect-error
+                    window.socket = socket;
+                    //@ts-expect-error
+                    window.epoch = epoch;
+                    //@ts-expect-error
+                    window.unepoch = unepoch;
+                }
             });
         }
-    });
+    }, [session, cookie]);
 
     return (
         <>
@@ -49,4 +63,9 @@ const Index: NextPage = () => {
     );
 };
 
-export default Index;
+Page.getInitialProps = async (ctx) => {
+    const cookie = cookies(ctx);
+    return { cookie };
+};
+
+export default Page;

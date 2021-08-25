@@ -4,9 +4,10 @@ generator client {
 }
 
 datasource db {
-    provider        = "mysql"
-    url             = env("DATABASE_URL")
-    planetScaleMode = true
+    provider          = "mysql"
+    url               = env("DATABASE_URL")
+    shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+    planetScaleMode   = true
 }
 
 model Account {
@@ -38,10 +39,11 @@ model Session {
 
 model User {
     id            String    @id @default(cuid())
-    name          String?
+    name          String
     email         String?   @unique
     emailVerified DateTime?
-    image         String?
+    image         String    @default("/defaultavatar.png")
+    theme         String    @default("system")
     createdAt     DateTime  @default(now())
     updatedAt     DateTime  @updatedAt
     threads       Thread[]
@@ -63,7 +65,8 @@ model VerificationRequest {
 
 model Thread {
     id       String    @id @default(cuid())
-    name     String?
+    name     String
+    image    String    @default("/defaultgroup.png")
     users    User[]
     Messages Message[]
 }
@@ -74,7 +77,7 @@ model Message {
     thread    Thread   @relation(fields: [threadId], references: [id])
     fromId    String
     from      User     @relation(fields: [fromId], references: [id])
-    type      Int
+    type      String // how to render data
     data      String // stored as data url
     createdAt DateTime @default(now())
 }
