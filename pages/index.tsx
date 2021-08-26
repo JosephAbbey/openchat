@@ -1,7 +1,7 @@
 import type { NextPage } from 'next';
 import { useEffect } from 'react';
 import { signIn, signOut, useSession } from 'next-auth/client';
-import io from 'socket.io-client';
+import OpenChatAPI from '../classes/openchatapi';
 import cookies from 'next-cookies';
 
 interface Props {
@@ -10,38 +10,17 @@ interface Props {
 
 const Page: NextPage<Props> = ({ cookie }) => {
     const [session] = useSession();
-
-    function epoch() {
-        //@ts-ignore
-        return Math.floor(new Date() / 1000);
-    }
-    function unepoch(time) {
-        //@ts-ignore
-        return new Date(time * 1000);
-    }
-
     useEffect(() => {
+        //@ts-expect-error
+        if (!window.ocAPI) {
+            //@ts-expect-error
+            window.ocAPI = new OpenChatAPI();
+        }
+        //@ts-expect-error
+        const ocAPI: OpenChatAPI = window.ocAPI;
+        ocAPI.disconnect();
         if (session) {
-            fetch('/api/socket').finally(() => {
-                const socket = io();
-
-                socket.on('handshake', () => {
-                    socket.emit('handshake', cookie['next-auth.session-token']);
-                });
-
-                socket.on('receive', (msg) => {
-                    console.log(msg);
-                });
-
-                if (process.env.NODE_ENV === 'development') {
-                    //@ts-expect-error
-                    window.socket = socket;
-                    //@ts-expect-error
-                    window.epoch = epoch;
-                    //@ts-expect-error
-                    window.unepoch = unepoch;
-                }
-            });
+            ocAPI.connect(cookie['next-auth.session-token']);
         }
     }, [session, cookie]);
 

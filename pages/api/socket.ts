@@ -1,7 +1,10 @@
 import { Server } from 'socket.io';
 import { PrismaClient, Prisma } from '@prisma/client';
+import Cors from 'cors';
 
-const prisma = new PrismaClient();
+const cors = Cors({
+    origin: '*',
+});
 
 function epoch() {
     //@ts-ignore
@@ -13,12 +16,18 @@ function unepoch(time) {
 }
 
 interface Pool {
-    [key: string]: string[];
+    [key: string]: Set<string>;
 }
 
 const ioHandler = (req, res) => {
+    cors(req, res, (err) => {});
     if (!res.socket.server.io) {
-        const io = new Server(res.socket.server);
+        const prisma = new PrismaClient();
+        const io = new Server(res.socket.server, {
+            cors: {
+                origin: '*',
+            },
+        });
         var pool: Pool = {};
 
         io.on('connection', (socket) => {
@@ -32,23 +41,36 @@ const ioHandler = (req, res) => {
                 socket.user = uid;
                 if (uid) {
                     if (pool[uid]) {
-                        pool[uid].push(socket.id);
+                        pool[uid].add(socket.id);
                     } else {
-                        pool[uid] = [socket.id];
+                        pool[uid] = new Set<string>([socket.id]);
                     }
                 }
                 socket.emit('data', '');
+                console.log(pool);
+            });
+
+            socket.on('disconnect', function () {
+                //@ts-expect-error
+                const uid = socket.user;
+                if (uid) {
+                    if (pool[uid]) {
+                        pool[uid].delete(socket.id);
+                    } else {
+                        pool[uid] = new Set<string>();
+                    }
+                }
+                console.log(pool);
             });
 
             socket.on('send', async (msg) => {
                 const [time, threadId, type, data]: string[] = msg.split('#');
-                console.log(unepoch(time), threadId, type, data);
                 const thread = prisma.thread.findUnique({
                     where: { id: threadId },
                 });
                 //@ts-expect-error
                 const fromId: string = socket.user;
-                const message = prisma.message.create({
+                prisma.message.create({
                     data: {
                         threadId,
                         fromId,
@@ -57,14 +79,12 @@ const ioHandler = (req, res) => {
                         createdAt: unepoch(parseFloat(time)),
                     },
                 });
-                const user = await prisma.user.findUnique({
-                    //@ts-expect-error
-                    where: { id: socket.user },
+                const from = await prisma.user.findUnique({
+                    where: { id: fromId },
                 });
-                const fwd = `${time}#${threadId}#${user?.image}#${user?.name}#${user?.id}#${type}#${data}`;
+                const fwd = `${time}#${threadId}#${from?.image}#${from?.name}#${from?.id}#${type}#${data}`;
                 (await thread.users()).forEach((user) => {
-                    //@ts-expect-error
-                    if (user !== socket.user && pool[user.id]) {
+                    if (user.id !== fromId && pool[user.id]) {
                         pool[user.id].forEach((sid) => {
                             io.to(sid).emit('receive', fwd);
                         });
@@ -76,7 +96,7 @@ const ioHandler = (req, res) => {
                 const [name, uids]: string[] = msg.split('#');
                 const userIds = uids.split(',');
 
-                const thread = await prisma.thread.create({
+                prisma.thread.create({
                     data: {
                         name,
                         users: {
