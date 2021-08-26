@@ -1,18 +1,20 @@
 class OpenChatAPI {
+    constructor(srv) {
+        this.srv = srv;
+    }
+
     getToken() {
         const params = this.getUrlVars();
         if (params['token']) {
             return params['token'];
         } else {
-            window.location =
-                'http://localhost:3000/api/thirdparty?callback=' +
-                window.location;
+            window.location = `${this.srv}/api/thirdparty?callback=${window.location}`;
         }
     }
 
     connect(token) {
-        fetch('http://localhost:3000/api/socket').finally(() => {
-            this.socket = io('http://localhost:3000');
+        fetch(`${this.srv}/api/socket`).finally(() => {
+            this.socket = io(this.srv);
 
             this.socket.on('handshake', () => {
                 if (token && this.socket) {
