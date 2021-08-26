@@ -3,8 +3,8 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "ts-node server.js",
-        "build": "next build",
+        "dev": "ts-node --project tsconfig.server.json server/index.ts",
+        "build": "next build && tsc --project tsconfig.server.json",
         "start": "NODE_ENV=production node dist/index.js",
         "lint": "next lint"
     },
