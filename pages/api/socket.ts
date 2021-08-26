@@ -47,7 +47,6 @@ const ioHandler = (req, res) => {
                     }
                 }
                 socket.emit('data', '');
-                console.log(pool);
             });
 
             socket.on('disconnect', function () {
@@ -60,7 +59,6 @@ const ioHandler = (req, res) => {
                         pool[uid] = new Set<string>();
                     }
                 }
-                console.log(pool);
             });
 
             socket.on('send', async (msg) => {

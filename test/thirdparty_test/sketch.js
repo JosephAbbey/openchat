@@ -1,5 +1,7 @@
-// for use with production this should be https://openchat.vercel.app
-const ocAPI = new OpenChatAPI('http://localhost:3000');
+// dev
+// const ocAPI = new OpenChatAPI('http://localhost:3000');
+// production
+const ocAPI = new OpenChatAPI('https://openchat.vercel.app');
 ocAPI.connect(ocAPI.getToken());
 
 ocAPI.send(

@@ -20,7 +20,11 @@ const Page: NextPage<Props> = ({ cookie }) => {
         const ocAPI: OpenChatAPI = window.ocAPI;
         ocAPI.disconnect();
         if (session) {
-            ocAPI.connect(cookie['next-auth.session-token']);
+            if (cookie['next-auth.session-token']) {
+                ocAPI.connect(cookie['next-auth.session-token']);
+            } else {
+                ocAPI.connect(cookie['__Secure-next-auth.session-token']);
+            }
         }
     }, [session, cookie]);
 
