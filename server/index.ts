@@ -73,7 +73,7 @@ nextApp.prepare().then(async () => {
             });
             //@ts-expect-error
             const fromId: string = socket.user;
-            prisma.message.create({
+            await prisma.message.create({
                 data: {
                     threadId,
                     fromId,
@@ -99,7 +99,7 @@ nextApp.prepare().then(async () => {
             const [name, uids]: string[] = msg.split('#');
             const userIds = uids.split(',');
 
-            prisma.thread.create({
+            await prisma.thread.create({
                 data: {
                     name,
                     users: {
