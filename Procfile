@@ -1,0 +1,1 @@
+web: pscale connect openchat main --execute-protocol 'mysql' --execute 'node dist/index.js'

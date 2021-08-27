@@ -3,9 +3,9 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev",
-        "build": "next build",
-        "start": "next start",
+        "dev": "ts-node --project tsconfig.server.json server/index.ts",
+        "build": "next build && tsc --project tsconfig.server.json",
+        "start": "NODE_ENV=production node dist/index.js -p $PORT",
         "lint": "next lint"
     },
     "dependencies": {
