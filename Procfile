@@ -1,0 +1,1 @@
+web: pscale connect openchat main --execute 'node dist/index.js'
