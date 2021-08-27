@@ -4,25 +4,27 @@ export default class openchatapi {
     socket: Socket | undefined;
 
     connect(token: string) {
-        this.socket = io();
+        fetch('/api/socket').finally(() => {
+            this.socket = io();
 
-        this.socket.on('handshake', () => {
-            if (token && this.socket) {
-                this.socket.emit('handshake', token);
-            }
-        });
+            this.socket.on('handshake', () => {
+                if (token && this.socket) {
+                    this.socket.emit('handshake', token);
+                }
+            });
 
-        this.socket.on('receive', (msg) => {
-            var data = msg.split('#');
-            this.onrecieve(
-                this.unepoch(parseInt(data[0])),
-                data[1],
-                data[2],
-                data[3],
-                data[4],
-                data[5],
-                data[6]
-            );
+            this.socket.on('receive', (msg) => {
+                var data = msg.split('#');
+                this.onrecieve(
+                    this.unepoch(parseInt(data[0])),
+                    data[1],
+                    data[2],
+                    data[3],
+                    data[4],
+                    data[5],
+                    data[6]
+                );
+            });
         });
     }
 
