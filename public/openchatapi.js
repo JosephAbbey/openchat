@@ -6,6 +6,7 @@ class OpenChatAPI {
     getToken() {
         const params = this.getUrlVars();
         if (params['token']) {
+            window.history.pushState(null, null, window.location.pathname);
             return params['token'];
         } else {
             window.location = `${this.srv}/api/thirdparty?callback=${window.location}`;
