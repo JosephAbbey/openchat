@@ -1,4 +1,3 @@
-import express, { Express } from 'express';
 import * as http from 'http';
 import next, { NextApiHandler } from 'next';
 import * as socketio from 'socket.io';
@@ -26,8 +25,9 @@ const nextApp = next({ dev });
 const nextHandler: NextApiHandler = nextApp.getRequestHandler();
 
 nextApp.prepare().then(async () => {
-    const app: Express = express();
-    const server: http.Server = http.createServer(app);
+    const server: http.Server = http.createServer((req: any, res: any) =>
+        nextHandler(req, res)
+    );
     const io: socketio.Server = new socketio.Server({
         cors: {
             origin: '*',
@@ -113,8 +113,6 @@ nextApp.prepare().then(async () => {
 
         socket.emit('handshake');
     });
-
-    app.all('*', (req: any, res: any) => nextHandler(req, res));
 
     server.listen(port, () => {
         console.log(`> Ready on http://localhost:${port}`);
