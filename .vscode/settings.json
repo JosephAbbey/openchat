@@ -10,7 +10,8 @@
         "**/.settings": true,
         "**/.factorypath": true,
         "**/node_modules": true,
-        "**/Thumbs.db": true
+        "**/Thumbs.db": true,
+        "**/dist": true
     },
     "explorerExclude.backup": null,
     "cSpell.words": [

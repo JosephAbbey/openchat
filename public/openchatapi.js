@@ -1,38 +1,48 @@
 class OpenChatAPI {
     constructor(srv) {
         this.srv = srv;
+        this.socket = undefined;
     }
 
     getToken() {
         const params = this.getUrlVars();
         if (params['token']) {
-            window.history.pushState(null, null, window.location.pathname);
+            window.history.pushState(null, '', window.location.pathname);
             return params['token'];
         } else {
-            window.location = `${this.srv}/api/thirdparty?callback=${window.location}`;
+            window.location.href = `${this.srv}/api/thirdparty?callback=${window.location}`;
         }
     }
 
     connect(token) {
-        this.socket = io(this.srv);
-
-        this.socket.on('handshake', () => {
-            if (token && this.socket) {
-                this.socket.emit('handshake', token);
+        return new Promise((resolve) => {
+            if (this.srv) {
+                this.socket = io(this.srv);
+            } else {
+                this.socket = io();
             }
-        });
 
-        this.socket.on('receive', (msg) => {
-            var data = msg.split('#');
-            this.onrecieve(
-                this.unepoch(parseInt(data[0])),
-                data[1],
-                data[2],
-                data[3],
-                data[4],
-                data[5],
-                data[6]
-            );
+            this.socket.on('handshake', () => {
+                if (token && this.socket) {
+                    this.socket.emit('handshake', token);
+                }
+            });
+
+            this.socket.on('receive', (msg) => {
+                var data = msg.split('#');
+                this.onrecieve(
+                    this.unepoch(parseInt(data[0])),
+                    data[1],
+                    data[2],
+                    data[3],
+                    data[4],
+                    data[5]
+                );
+            });
+
+            this.socket.on('data', (msg) => {
+                resolve();
+            });
         });
     }
 
@@ -40,14 +50,11 @@ class OpenChatAPI {
         this.socket?.disconnect();
     }
 
-    send(time, threadId, type, data) {
-        this.socket?.emit(
-            'send',
-            `${this.epoch(time)}#${threadId}#${type}#${data}`
-        );
+    send(time, threadId, data) {
+        this.socket?.emit('send', `${this.epoch(time)}#${threadId}#${data}`);
     }
 
-    onrecieve(time, threadId, fromImage, fromName, fromId, type, data) {
+    onrecieve(time, threadId, fromImage, fromName, fromId, data) {
         console.warn(
             'You have not set an onrecieve listener. Here is the data though: ',
             {
@@ -56,7 +63,6 @@ class OpenChatAPI {
                 fromImage,
                 fromName,
                 fromId,
-                type,
                 data,
             }
         );
@@ -68,6 +74,7 @@ class OpenChatAPI {
             /[?&]+([^=&]+)=([^&]*)/gi,
             function (m, key, value) {
                 vars[key] = value;
+                return '';
             }
         );
         return vars;

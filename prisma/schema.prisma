@@ -77,7 +77,8 @@ model Message {
     thread    Thread   @relation(fields: [threadId], references: [id])
     fromId    String
     from      User     @relation(fields: [fromId], references: [id])
-    type      String // how to render data
-    data      String // stored as data url
+    type      String
+    encoding  String
+    data      Bytes
     createdAt DateTime @default(now())
 }
